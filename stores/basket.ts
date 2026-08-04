@@ -438,6 +438,7 @@ export const useBasketStore = defineStore("basket", () => {
         let updatedBasket: Basket;
         const cleanedVariables = sanitizeVariableData(variables);
 
+        const pkg = await services.getPackage(packageId.toString());
         const packageType = pkg.type === "subscription" ? "subscription" : "single";
 
         try {
