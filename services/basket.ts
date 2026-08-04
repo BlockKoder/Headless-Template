@@ -21,15 +21,17 @@ export const addPackageToBasket = (
     packageId: string,
     quantity: number,
     variables?: Record<string, string>,
+    packageType: string = "single",
 ) =>
     useAPI<Basket>(
         "accounts",
-        `/${basketId}/packages`,
+        `/baskets/${basketId}/packages`,
         {
             method: "POST",
             body: {
                 package_id: packageId,
                 quantity,
+                type: packageType,
                 variable_data: variables,
             },
         },
@@ -37,7 +39,7 @@ export const addPackageToBasket = (
     );
 
 export const removePackageFromBasket = (basketId: string, packageId: string) =>
-    useAPI<Basket>("accounts", `/${basketId}/packages/remove`, {
+    useAPI<Basket>("accounts", `/baskets/${basketId}/packages/remove`, {
         method: "POST",
         body: {
             package_id: packageId,
@@ -49,18 +51,17 @@ export const giftPackage = (
     packageId: string,
     targetGiftUsernameId: string,
     variables?: Record<string, string>,
+    packageType: string = "single",
 ) =>
-    useAPI<Basket>("accounts", `/${basketId}/packages`, {
+    useAPI<Basket>("accounts", `/baskets/${basketId}/packages`, {
         method: "POST",
         body: {
             package_id: packageId,
+            type: packageType,
             target_username_id: targetGiftUsernameId,
             variable_data: variables,
         },
     });
 
 export const getBasketAuthMethods = (basketId: string, returnUrl: string) =>
-    useAPI<BasketAuthMethod[]>(
-        "accounts",
-        `/baskets/${basketId}/auth?returnUrl=${returnUrl}`,
-    );
+    useAPI<BasketAuthMethod[]>("accounts", `/baskets/${basketId}/auth?returnUrl=${returnUrl}`);

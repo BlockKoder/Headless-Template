@@ -254,6 +254,8 @@ export const useBasketStore = defineStore("basket", () => {
             return;
         }
 
+        const packageType = pkg.type === "subscription" ? "subscription" : "single";
+
         let updatedBasket: Basket;
 
         try {
@@ -264,6 +266,7 @@ export const useBasketStore = defineStore("basket", () => {
                 packageId.toString(),
                 quantityToAdd,
                 cleanedVariables,
+                packageType,
             );
 
             basket.value = updatedBasket;
@@ -310,6 +313,7 @@ export const useBasketStore = defineStore("basket", () => {
                             packageId.toString(),
                             payload.quantity,
                             payload.variables,
+                            packageType,
                         );
 
                         basket.value = updatedBasket;
@@ -434,6 +438,8 @@ export const useBasketStore = defineStore("basket", () => {
         let updatedBasket: Basket;
         const cleanedVariables = sanitizeVariableData(variables);
 
+        const packageType = pkg.type === "subscription" ? "subscription" : "single";
+
         try {
             packagesLoading.add(packageId);
 
@@ -442,6 +448,7 @@ export const useBasketStore = defineStore("basket", () => {
                 packageId.toString(),
                 targetGiftUsernameId,
                 cleanedVariables,
+                packageType,
             );
 
             basket.value = updatedBasket;
