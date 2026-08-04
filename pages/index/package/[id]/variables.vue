@@ -10,7 +10,7 @@
                     :label="variable.description"
                     v-model="variableData[variable.identifier]"
                     :options="variable.options"
-                    valueKey="value"
+                    valueKey="id"
                 />
 
                 <Input

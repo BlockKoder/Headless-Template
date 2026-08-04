@@ -40,7 +40,7 @@
             <ClientOnly>
                 <PackageActions
                     v-model:quantity="quantity"
-                    :hide-options="!!hideOptions"
+                    :hide-options="!!hideOptions || pkg.disable_quantity"
                     :hide-gift-button="pkg.disable_gifting"
                     :stacked="!!actionsStacked"
                     @add-to-cart="action('addToCart', $event)"

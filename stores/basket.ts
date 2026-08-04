@@ -1,5 +1,10 @@
 import { StorageSerializers, useStorage } from "@vueuse/core";
-import type { Basket, Package, PackageVariableData } from "~/types";
+import type {
+    Basket,
+    Package,
+    PackageVariable,
+    PackageVariableData,
+} from "~/types";
 import * as services from "~/services";
 import { skipHydrate } from "pinia";
 
@@ -32,6 +37,59 @@ function sanitizeVariableData(variables?: PackageVariableData) {
     }, {} as PackageVariableData);
 
     return Object.keys(sanitized).length ? sanitized : undefined;
+}
+
+function hasInvalidOptionError(error: unknown) {
+    return (error as Error)?.message
+        ?.toLowerCase()
+        .includes("one of the options provided is invalid");
+}
+
+function swapVariableOptionRepresentation(
+    variables: PackageVariableData,
+    pkgVariables?: PackageVariable[],
+) {
+    if (!pkgVariables?.length) {
+        return undefined;
+    }
+
+    const swapped = { ...variables };
+    let changed = false;
+
+    for (const variable of pkgVariables) {
+        if (!variable.options?.length) {
+            continue;
+        }
+
+        const currentValue = swapped[variable.identifier];
+
+        if (currentValue === null || typeof currentValue === "undefined") {
+            continue;
+        }
+
+        const normalizedCurrent = String(currentValue);
+
+        const byValue = variable.options.find(
+            (option) => String(option.value) === normalizedCurrent,
+        );
+
+        if (byValue) {
+            swapped[variable.identifier] = String(byValue.id);
+            changed = true;
+            continue;
+        }
+
+        const byId = variable.options.find(
+            (option) => String(option.id) === normalizedCurrent,
+        );
+
+        if (byId) {
+            swapped[variable.identifier] = String(byId.value);
+            changed = true;
+        }
+    }
+
+    return changed ? sanitizeVariableData(swapped) : undefined;
 }
 
 export const useBasketStore = defineStore("basket", () => {
@@ -188,6 +246,7 @@ export const useBasketStore = defineStore("basket", () => {
         const pkg = await services.getPackage(packageId.toString());
 
         const cleanedVariables = sanitizeVariableData(variables);
+        const quantityToAdd = pkg.disable_quantity ? 1 : quantity;
 
         if (pkg.variables?.length && !cleanedVariables) {
             // Store the action to be performed after setting variables
@@ -203,24 +262,79 @@ export const useBasketStore = defineStore("basket", () => {
             updatedBasket = await services.addPackageToBasket(
                 basket.value.ident,
                 packageId.toString(),
-                quantity,
+                quantityToAdd,
                 cleanedVariables,
             );
 
             basket.value = updatedBasket;
         } catch (error) {
-            const message = (error as Error).message || "Server error";
+            let resolvedError = error;
 
-            toastStore.addToast(
-                message === "Server error"
-                    ? t("error.cannot_add_package")
-                    : message,
-                {
-                    type: "error",
-                },
-            );
+            if (hasInvalidOptionError(error)) {
+                const retryPayloads: Array<{
+                    quantity: number;
+                    variables?: PackageVariableData;
+                }> = [];
+                const swappedVariables = cleanedVariables
+                    ? swapVariableOptionRepresentation(
+                        cleanedVariables,
+                        pkg.variables,
+                    )
+                    : undefined;
 
-            return;
+                if (quantityToAdd > 1) {
+                    retryPayloads.push({
+                        quantity: 1,
+                        variables: cleanedVariables,
+                    });
+                }
+
+                if (swappedVariables) {
+                    retryPayloads.push({
+                        quantity: quantityToAdd,
+                        variables: swappedVariables,
+                    });
+
+                    if (quantityToAdd > 1) {
+                        retryPayloads.push({
+                            quantity: 1,
+                            variables: swappedVariables,
+                        });
+                    }
+                }
+
+                for (const payload of retryPayloads) {
+                    try {
+                        updatedBasket = await services.addPackageToBasket(
+                            basket.value.ident,
+                            packageId.toString(),
+                            payload.quantity,
+                            payload.variables,
+                        );
+
+                        basket.value = updatedBasket;
+                        resolvedError = undefined;
+                        break;
+                    } catch (retryError) {
+                        resolvedError = retryError;
+                    }
+                }
+            }
+
+            if (!updatedBasket) {
+                const message = (resolvedError as Error).message || "Server error";
+
+                toastStore.addToast(
+                    message === "Server error"
+                        ? t("error.cannot_add_package")
+                        : message,
+                    {
+                        type: "error",
+                    },
+                );
+
+                return;
+            }
         } finally {
             packagesLoading.delete(packageId);
         }
