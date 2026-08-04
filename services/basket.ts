@@ -23,7 +23,7 @@ export const addPackageToBasket = (
     variables?: Record<string, string>,
 ) =>
     useAPI<Basket>(
-        "baskets",
+        "accounts",
         `/${basketId}/packages`,
         {
             method: "POST",
@@ -37,7 +37,7 @@ export const addPackageToBasket = (
     );
 
 export const removePackageFromBasket = (basketId: string, packageId: string) =>
-    useAPI<Basket>("baskets", `/${basketId}/packages/remove`, {
+    useAPI<Basket>("accounts", `/${basketId}/packages/remove`, {
         method: "POST",
         body: {
             package_id: packageId,
@@ -50,7 +50,7 @@ export const giftPackage = (
     targetGiftUsernameId: string,
     variables?: Record<string, string>,
 ) =>
-    useAPI<Basket>("baskets", `/${basketId}/packages`, {
+    useAPI<Basket>("accounts", `/${basketId}/packages`, {
         method: "POST",
         body: {
             package_id: packageId,
