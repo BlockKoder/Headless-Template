@@ -5,16 +5,24 @@
 
             <div v-for="variable in pkg.variables" :key="variable.id">
                 <Dropdown
-                    v-if="variable.type && variable.options"
+                    v-if="variable.options?.length"
                     :name="variable.identifier"
                     :label="variable.description"
                     v-model="variableData[variable.identifier]"
                     :options="variable.options"
-                    valueKey="id"
+                    valueKey="value"
+                />
+
+                <Input
+                    v-else
+                    :name="variable.identifier"
+                    :label="variable.description"
+                    v-model="variableData[variable.identifier]"
                 />
             </div>
 
             <Button
+                :disabled="!isVariableDataValid"
                 :loading="isSubmitting"
                 @click="submit(pkg.id, variableData)"
             >
@@ -56,15 +64,52 @@ if (error.value) {
 
 const variableData = reactive(
     pkg.value?.variables?.reduce((acc, variable) => {
-        acc[variable.identifier] = null;
+        acc[variable.identifier] = "";
 
         return acc;
     }, {} as PackageVariableData) ?? {},
 );
 
+const isVariableDataValid = computed(() => {
+    if (!pkg.value?.variables?.length) {
+        return true;
+    }
+
+    return pkg.value.variables.every((variable) => {
+        const value = variableData[variable.identifier];
+
+        return typeof value === "string"
+            ? value.trim().length > 0
+            : value !== null && typeof value !== "undefined";
+    });
+});
+
+const normalizeVariableData = (data: PackageVariableData): PackageVariableData => {
+    return Object.entries(data).reduce((acc, [key, value]) => {
+        if (value === null || typeof value === "undefined") {
+            return acc;
+        }
+
+        const normalizedValue = typeof value === "string" ? value.trim() : String(value);
+
+        if (!normalizedValue) {
+            return acc;
+        }
+
+        acc[key] = normalizedValue;
+
+        return acc;
+    }, {} as PackageVariableData);
+};
+
 const isSubmitting = ref(false);
 const submit = async (packageId: number, data: PackageVariableData) => {
+    if (!isVariableDataValid.value) {
+        return;
+    }
+
     isSubmitting.value = true;
+    const normalizedData = normalizeVariableData(data);
 
     try {
         if (targetUsernameId.value) {
@@ -72,13 +117,13 @@ const submit = async (packageId: number, data: PackageVariableData) => {
                 await basketStore.giftPackage(
                     packageId,
                     targetUsernameId.value,
-                    variableData,
+                    normalizedData,
                 );
             } catch (error) {
                 console.log(error);
             }
         } else {
-            await basketStore.addPackageToBasket(packageId, 1, data);
+            await basketStore.addPackageToBasket(packageId, 1, normalizedData);
         }
 
         open.value = false;

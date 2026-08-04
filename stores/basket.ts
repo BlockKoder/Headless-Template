@@ -10,6 +10,30 @@ interface BasketAction {
     targetUsername?: string;
 }
 
+function sanitizeVariableData(variables?: PackageVariableData) {
+    if (!variables) {
+        return undefined;
+    }
+
+    const sanitized = Object.entries(variables).reduce((acc, [key, value]) => {
+        if (value === null || typeof value === "undefined") {
+            return acc;
+        }
+
+        const normalized = typeof value === "string" ? value.trim() : String(value);
+
+        if (!normalized) {
+            return acc;
+        }
+
+        acc[key] = normalized;
+
+        return acc;
+    }, {} as PackageVariableData);
+
+    return Object.keys(sanitized).length ? sanitized : undefined;
+}
+
 export const useBasketStore = defineStore("basket", () => {
     const appConfig = useAppConfig();
 
@@ -163,7 +187,9 @@ export const useBasketStore = defineStore("basket", () => {
         // Check if the package requires variables to be set
         const pkg = await services.getPackage(packageId.toString());
 
-        if (pkg.variables && !variables) {
+        const cleanedVariables = sanitizeVariableData(variables);
+
+        if (pkg.variables?.length && !cleanedVariables) {
             // Store the action to be performed after setting variables
             await router.push(`/package/${packageId}/variables`);
             return;
@@ -178,7 +204,7 @@ export const useBasketStore = defineStore("basket", () => {
                 basket.value.ident,
                 packageId.toString(),
                 quantity,
-                variables,
+                cleanedVariables,
             );
 
             basket.value = updatedBasket;
@@ -292,6 +318,7 @@ export const useBasketStore = defineStore("basket", () => {
         }
 
         let updatedBasket: Basket;
+        const cleanedVariables = sanitizeVariableData(variables);
 
         try {
             packagesLoading.add(packageId);
@@ -300,7 +327,7 @@ export const useBasketStore = defineStore("basket", () => {
                 basket.value.ident,
                 packageId.toString(),
                 targetGiftUsernameId,
-                variables,
+                cleanedVariables,
             );
 
             basket.value = updatedBasket;
