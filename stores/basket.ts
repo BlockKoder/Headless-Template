@@ -438,7 +438,6 @@ export const useBasketStore = defineStore("basket", () => {
         let updatedBasket: Basket;
         const cleanedVariables = sanitizeVariableData(variables);
 
-        const pkg = await services.getPackage(packageId.toString());
         const packageType = pkg.type === "subscription" ? "subscription" : "single";
 
         try {
@@ -457,12 +456,10 @@ export const useBasketStore = defineStore("basket", () => {
             packagesLoading.delete(packageId);
         }
 
-        const basketPackage = updatedBasket.packages.find(
-            (item) => item.id === packageId,
-        );
+        const pkg = updatedBasket.packages.find((pkg) => pkg.id === packageId);
 
         toastStore.addToast(
-            t("messages.success.added_to_cart", { name: basketPackage?.name }),
+            t("messages.success.added_to_cart", { name: pkg?.name }),
             {
                 type: "success",
             },
