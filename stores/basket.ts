@@ -457,10 +457,12 @@ export const useBasketStore = defineStore("basket", () => {
             packagesLoading.delete(packageId);
         }
 
-        const pkg = updatedBasket.packages.find((pkg) => pkg.id === packageId);
+        const basketPackage = updatedBasket.packages.find(
+            (item) => item.id === packageId,
+        );
 
         toastStore.addToast(
-            t("messages.success.added_to_cart", { name: pkg?.name }),
+            t("messages.success.added_to_cart", { name: basketPackage?.name }),
             {
                 type: "success",
             },
