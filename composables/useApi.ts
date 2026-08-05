@@ -15,7 +15,9 @@ export function useAPI<T = unknown>(
 ) {
     const toastStore = useToastStore();
     const config = useRuntimeConfig();
-    const baseURL = `${config.public.apiBaseUrl}/api/${route}/${route === "accounts" ? config.public.apiPublicKey : ""}`;
+    const tokenPath =
+        route === "accounts" ? `/${config.public.apiPublicKey}` : "";
+    const baseURL = `${config.public.apiBaseUrl}/api/${route}${tokenPath}`;
 
     return $fetch<T>(url, {
         baseURL,
