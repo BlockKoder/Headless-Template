@@ -161,9 +161,19 @@ const quantity = ref<number>(1);
         padding: $package-card-padding;
         border-radius: $package-card-border-radius;
         box-shadow: $package-card-box-shadow;
+        border: 1px solid rgba(143, 162, 194, 0.2);
+        backdrop-filter: blur(5px);
         position: relative;
         gap: 20px;
         width: 100%;
+        transition: transform 220ms ease, box-shadow 220ms ease,
+            border-color 220ms ease;
+    }
+
+    &:hover &__inner {
+        transform: translateY(-4px);
+        box-shadow: 0 22px 40px rgba(0, 0, 0, 0.33);
+        border-color: rgba(215, 162, 74, 0.58);
     }
 
     .package-actions {
@@ -176,11 +186,12 @@ const quantity = ref<number>(1);
             color: $package-card-name-color;
             font-weight: $package-card-name-font-weight;
             margin-bottom: 6px;
+            letter-spacing: -0.01em;
         }
 
         h6 {
             font-size: $package-card-price-font-size;
-            font-weight: 700;
+            font-weight: 800;
             color: $package-card-price-color;
         }
 
@@ -191,15 +202,29 @@ const quantity = ref<number>(1);
         display: flex;
         align-items: center;
         justify-content: center;
-        padding: 32px;
+        padding: 28px;
         flex-grow: 1;
         background: $package-card-image-bg;
+
+        img {
+            filter: drop-shadow(0 12px 12px rgba(0, 0, 0, 0.32));
+            transition: transform 220ms ease;
+        }
+    }
+
+    &:hover &__image img {
+        transform: scale(1.04);
     }
 
     &__details {
         display: flex;
         flex-direction: column;
         padding: $package-card-details-padding;
+
+        p {
+            color: $text-medium-emphasis-color;
+            line-height: 1.6;
+        }
     }
 
     &--details {

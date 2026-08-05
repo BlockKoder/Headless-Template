@@ -209,6 +209,8 @@ const { data: categories } = await useAsyncData("categories", () => {
     }
 
     &__container {
+        border-radius: 0 0 16px 16px;
+
         &--sticky {
             position: fixed;
             top: 0;
@@ -216,6 +218,9 @@ const { data: categories } = await useAsyncData("categories", () => {
             right: 0;
             z-index: map-get($z-index, "header");
             background-color: $header-sticky-bg;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(143, 162, 194, 0.28);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
 
             #{$self}__logo {
                 display: none !important;
@@ -225,6 +230,10 @@ const { data: categories } = await useAsyncData("categories", () => {
                 }
             }
         }
+    }
+
+    &__logo {
+        filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.25));
     }
 }
 </style>

@@ -56,12 +56,29 @@ defineProps<HeroProps>();
     }
 
     &__title {
+        max-width: 760px;
+        padding: 0 24px;
+
         h1 {
             color: inherit;
+            font-size: clamp(2rem, 6vw, 4rem);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 10px;
+            text-wrap: balance;
         }
+
+        div {
+            font-size: clamp(1rem, 2vw, 1.25rem);
+            color: rgba(255, 255, 255, 0.86);
+            max-width: 60ch;
+            margin: 0 auto;
+        }
+
         color: $hero-banner-color;
         position: relative;
         z-index: 2;
+        animation: hero-fade-in 650ms ease-out both;
     }
 
     &__background {
@@ -79,6 +96,30 @@ defineProps<HeroProps>();
         width: 100%;
         height: 100%;
         object-fit: cover;
+        transform: scale(1.05);
+        animation: hero-pan 16s ease-in-out infinite alternate;
+    }
+}
+
+@keyframes hero-fade-in {
+    from {
+        opacity: 0;
+        transform: translateY(18px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes hero-pan {
+    from {
+        transform: scale(1.05) translateX(-1.5%);
+    }
+
+    to {
+        transform: scale(1.08) translateX(1.5%);
     }
 }
 </style>

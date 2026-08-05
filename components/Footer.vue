@@ -90,11 +90,12 @@ const appConfig = useAppConfig();
     &__tebex {
         display: flex;
         align-items: center;
-        font-family: "Lato";
+        font-family: $font-family;
         min-height: $footer-tebex-height;
         background-color: $footer-tebex-bg;
         color: $footer-tebex-color;
         font-size: $footer-tebex-font-size;
+        border-top: 1px solid rgba(143, 162, 194, 0.24);
 
         &-inner {
             display: flex;
